@@ -2,11 +2,15 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "localhost:8080/demo/rtechno-backend" // Projet Harbor
-        IMAGE_TAG = "latest"
-        DOCKER_CREDENTIALS = credentials('harbor-creds') // Harbor
-        SONAR_TOKEN = credentials('sonar-token')        // SonarQube
-        GIT_CREDENTIALS = 'github-ssh-key'             // GitHub SSH Key
+        IMAGE_NAME       = "localhost:8080/demo/rtechno-backend" // Projet Harbor
+        IMAGE_TAG        = "latest"
+        DOCKER_CREDENTIALS = 'harbor-creds'   // Identifiants Harbor
+        SONAR_TOKEN        = credentials('sonar-token')  // Token SonarQube
+        GIT_CREDENTIALS    = 'github-ssh-key' // GitHub SSH Key
+    }
+
+    tools {
+        maven 'Maven3'   // Défini dans Manage Jenkins > Global Tool Configuration
     }
 
     stages {
@@ -20,19 +24,25 @@ pipeline {
 
         stage('⚙️ Compilation Maven') {
             steps {
-                sh 'mvn clean compile'
+                withMaven(maven: 'Maven3') {
+                    sh 'mvn clean compile'
+                }
             }
         }
 
         stage('🧪 Tests unitaires') {
             steps {
-                sh 'mvn test surefire-report:report'
+                withMaven(maven: 'Maven3') {
+                    sh 'mvn test surefire-report:report'
+                }
             }
         }
 
         stage('📦 Build JAR') {
             steps {
-                sh 'mvn package -DskipTests=false'
+                withMaven(maven: 'Maven3') {
+                    sh 'mvn package -DskipTests=false'
+                }
             }
         }
 
@@ -53,7 +63,9 @@ pipeline {
         stage('🔍 Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
+                    withMaven(maven: 'Maven3') {
+                        sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
         }
