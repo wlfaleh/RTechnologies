@@ -1,0 +1,9 @@
+image:
+  repository: localhost:8080/rtechno-backend
+  tag: latest
+replicaCount: 1
+service:
+  type: ClusterIP
+  port: 6060
+env:
+  DEMO_MESSAGE: "Bonjour depuis Helm"
