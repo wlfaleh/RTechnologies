@@ -17,7 +17,7 @@ pipeline {
         stage('📥 Récupération du code') {
             steps {
                 git branch: 'master',
-                    url: 'https://github.com/wlfaleh/RTechnologies.git
+                    url: 'https://github.com/wlfaleh/RTechnologies.git'
             }
         }
 
