@@ -10,7 +10,7 @@ pipeline {
     }
 
     tools {
-        maven 'Maven3'   // Défini dans Manage Jenkins > Global Tool Configuration
+        maven 'maven3'   // Défini dans Manage Jenkins > Global Tool Configuration
     }
 
     stages {
@@ -24,7 +24,7 @@ pipeline {
 
         stage('⚙️ Compilation Maven') {
             steps {
-                withMaven(maven: 'Maven3') {
+                withMaven(maven: 'maven3') {
                     sh 'mvn clean compile'
                 }
             }
@@ -32,7 +32,7 @@ pipeline {
 
         stage('🧪 Tests unitaires') {
             steps {
-                withMaven(maven: 'Maven3') {
+                withMaven(maven: 'maven3') {
                     sh 'mvn test surefire-report:report'
                 }
             }
@@ -40,7 +40,7 @@ pipeline {
 
         stage('📦 Build JAR') {
             steps {
-                withMaven(maven: 'Maven3') {
+                withMaven(maven: 'maven3') {
                     sh 'mvn package -DskipTests=false'
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
         stage('🔍 Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    withMaven(maven: 'Maven3') {
+                    withMaven(maven: 'maven3') {
                         sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
                     }
                 }
