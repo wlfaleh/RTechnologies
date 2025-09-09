@@ -1,35 +1,83 @@
 pipeline {
     agent any
+
     environment {
-        DOCKER_REGISTRY = "localhost:8080"   // Harbor
-        IMAGE_NAME = "rtechno-backend"
+        IMAGE_NAME = "localhost:8080/demo/rtechno-backend" // Projet Harbor
         IMAGE_TAG = "latest"
+        DOCKER_CREDENTIALS = credentials('harbor-creds') // Harbor
+        SONAR_TOKEN = credentials('sonar-token')        // SonarQube
+        GIT_CREDENTIALS = 'github-ssh-key'             // GitHub SSH Key
     }
+
     stages {
-        stage('Checkout') {
-            steps { git branch: 'main', url: 'https://github.com/TON_COMPTE/RTechnologies.git' }
-        }
-        stage('Build') {
-            steps { sh 'mvn clean package -DskipTests' }
-        }
-        stage('Docker Build') {
-            steps { sh "docker build -t ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ." }
-        }
-        stage('Docker Push') {
+        stage('📥 Récupération du code') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'harbor-credentials', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')]) {
-                    sh "echo $HARBOR_PASS | docker login ${DOCKER_REGISTRY} -u $HARBOR_USER --password-stdin"
-                    sh "docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                git branch: 'master',
+                    url: 'git@github.com:wlfaleh/RTechnologies.git',
+                    credentialsId: "${GIT_CREDENTIALS}"
+            }
+        }
+
+        stage('⚙️ Compilation Maven') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('🧪 Tests unitaires') {
+            steps {
+                sh 'mvn test surefire-report:report'
+            }
+        }
+
+        stage('📦 Build JAR') {
+            steps {
+                sh 'mvn package -DskipTests=false'
+            }
+        }
+
+        stage('🐳 Build image Docker') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('📤 Push image Docker vers Harbor') {
+            steps {
+                withDockerRegistry([credentialsId: "${DOCKER_CREDENTIALS}", url: 'http://localhost:8080']) {
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-        stage('SonarQube Analysis') {
-            environment {
-                SONAR_TOKEN = credentials('sonarqube-token')
-            }
+
+        stage('🔍 Analyse SonarQube') {
             steps {
-                sh "mvn sonar:sonar -Dsonar.projectKey=rtechno-backend -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONAR_TOKEN"
+                withSonarQubeEnv('sonarqube') {
+                    sh 'mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}'
+                }
             }
+        }
+
+        stage('🚀 Déploiement via Helm') {
+            steps {
+                sh """
+                helm upgrade --install rtechno-backend ./rtechno-chart \
+                    --set image.repository=${IMAGE_NAME} \
+                    --set image.tag=${IMAGE_TAG}
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo '✅ Pipeline terminé avec succès !'
+        }
+        failure {
+            echo '❌ Pipeline échoué. Vérifier les logs.'
         }
     }
 }
