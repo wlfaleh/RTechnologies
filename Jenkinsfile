@@ -45,15 +45,15 @@ pipeline {
             }
         }
 		
-		   //   stage('🔍 Analyse SonarQube') {
-         //   steps {
-          //      withSonarQubeEnv('sonarqube') {
-        //            withMaven(maven: 'maven3') {
-               //         sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
-             //       }
-           //     }
-         //   }
-       // }
+		  //    stage('🔍 Analyse SonarQube') {
+          //  steps {
+            //    withSonarQubeEnv('sonarqube') {
+             //       withMaven(maven: 'maven3') {
+                   //     sh "mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}"
+              //      }
+            //    }
+        //    }
+      //  }
 
         stage('🐳 Build image Docker') {
             steps {
