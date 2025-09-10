@@ -5,6 +5,6 @@ replicaCount: 1
 service:
   type: NodePort
   port: 6060
-  nodePort: 30080
+  nodePort: 30060
 env:
   DEMO_MESSAGE: "Bonjour depuis Helm"
