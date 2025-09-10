@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: host.docker.internal:8080/demo/rtechno-backend
+  repository: host.docker.internal:8443/demo/rtechno-backend
   tag: latest
 
 service:
