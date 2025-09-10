@@ -12,10 +12,6 @@ spec:
       labels:
         app: rtechno-backend
     spec:
-      imagePullSecrets:
-        {{- range .Values.imagePullSecrets }}
-        - name: {{ .name }}
-        {{- end }}
       containers:
         - name: rtechno-backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -24,3 +20,17 @@ spec:
           env:
             - name: DEMO_MESSAGE
               value: "{{ .Values.env.DEMO_MESSAGE }}"
+            - name: SSL_CERT_DIR
+              value: "/etc/ssl/certs"
+          volumeMounts:
+            - name: harbor-ca
+              mountPath: /etc/ssl/certs
+              readOnly: true
+      imagePullSecrets:
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+      volumes:
+        - name: harbor-ca
+          configMap:
+            name: harbor-ca-cert
