@@ -12,6 +12,10 @@ spec:
       labels:
         app: rtechno-backend
     spec:
+      imagePullSecrets:
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
       containers:
         - name: rtechno-backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
