@@ -10,7 +10,7 @@ service:
   nodePort: 30060
 
 env:
-  DEMO_MESSAGE: "Bonjour depuis Helm  surcharger!!!!!"
+  DEMO_MESSAGE: "Bonjour depuis Helm  surcharger !!!!!  "
 
 # Secret Docker pour Harbor
 imagePullSecrets:
